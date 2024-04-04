@@ -2081,7 +2081,7 @@ class Users(_MetaCategory):
         """
         return self.s.get(endpoint="get_user_by_email", params={"email": email})
 
-    def get_users(self, project_id: Optional[int] = None) -> List[dict]:
+    def get_users(self, project_id: Optional[int] = None, **kwargs) -> List[dict]:
         """
         Returns a list of users.
         :param project_id:
@@ -2089,7 +2089,20 @@ class Users(_MetaCategory):
             (Required for non-administrators. Requires TestRail 6.6 or later.)
         :return: response
         """
-        return self.s.get(endpoint=f"get_users/{project_id}" if project_id else "get_users")
+        limit = kwargs.get('limit', LIMIT_MAX)
+        offset = kwargs.get('offset', 0)
+        return self.s.get(endpoint=f"get_users/{project_id}" if project_id else "get_users",
+                    params=dict(limit=limit, offset=offset, **kwargs),
+                          )
+
+    def get_users_bulk(self, project_id: Optional[int] = None) -> List[dict]:
+        """
+        Returns the list of users using the bulk api method.
+        :param project_id:
+            The ID of the project for which you would like to retrieve user information.
+            (Required for non-administrators. Requires TestRail 6.6 or later.)
+        """
+        return _bulk_api_method(self.get_users, "users", project_id=project_id)
 
 
 class SharedSteps(_MetaCategory):
